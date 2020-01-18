@@ -1,27 +1,26 @@
 ## AWS Security Hub - Bootstrap and Operationalization
 ![Architecture](https://github.com/aws-samples/aws-security-services-with-terraform/blob/master/AWS%20Security%20Hub%20-%20Bootstrap%20and%20Operationalization/Terraform%20Security%20Hub%20Operationalization.jpg)
 
-The Terraform configuration files within this folder are designed to help customers bootstrap and operationalize Security Hub. These templates create CIS AWS Foundations Benchmark-compliant resources such as CloudTrail, VPCs, and S3 Buckets as well as enables core security services along with Security Hub. It will also enable Config for you and create a Kinesis-based delivery pipeline to extract Security Hub findings and send them to Elasticsearch to use as a Security Information & Event Management (SIEM) tool. The configuration files are kept separate to allow users to delete ones that are not needed (i.e. remove config.tf if you already have Config enabled, or removed security_services.tf if they already have GuardDuty, Security Hub and Inspector templates). You can reuse your same `provider.tf` file from the WAF Blog for this solution as well.
+The Terraform configuration files within this folder are designed to help customers bootstrap and operationalize Security Hub by enabling downstream services (Config, GuardDuty, Inspector), creating resources that are compliant with AWS CIS Foundations Benchmark controls and extending Security Hub via CloudWatch and Kinesis by consuming all findings into Elasticsearch Service and using Kibana as a Security Information & Event Management (SIEM) tool. All Terraform config files are created seperately to offer modularity (though all variables are within `variables.tf`) if you already have certain resources deployed, or you wanted to craft your own Terraform config files. You can reuse your same `provider.tf` file from the WAF Blog for this solution as well to retain your state in your remote backend.
 
 ## Required IAM Permissions
 You will need to modify the CodeBuild role created for the WAF Blog to allow it to create all of these resources, which include:
-- Config
-- Security Hub
-- GuardDuty
-- Inspector
-- CloudTrail
-- IAM
-- KMS
-- S3
-- Kinesis Data Streams
-- Kinesis Data Firehose Delivery Streams
-- Elasticsearch Service
 - CloudWatch Events
 - CloudWatch Logs
+- CloudTrail
+- Config
+- Cognito
+- EC2
+- Elasticsearch Service
+- GuardDuty
+- IAM
+- Inspector
+- Kinesis Data Streams
+- Kinesis Data Firehose
+- KMS
+- S3
 - SNS
 - VPC
-- EC2
-If you decide to use an administrator policy you do so at your own risk. If you create this policy you will need a full CRUD of permissions for the above services.
 
 ## Terraform Configuration File Inventory
 ### config.tf
