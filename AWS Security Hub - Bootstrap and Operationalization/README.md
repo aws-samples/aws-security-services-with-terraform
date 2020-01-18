@@ -46,7 +46,7 @@ This config file will create an ElasticSearch Service domain, Cognito resources 
 
 ### Solutions Architecture
 This is what will be created if all config files are applied
-![Architecture](https://github.com/aws-samples/aws-security-services-with-terraform/blob/master/Architecture.jpg)
+![Architecture](https://github.com/aws-samples/aws-security-services-with-terraform/blob/master/AWS%20Security%20Hub%20-%20Bootstrap%20and%20Operationalization/Terraform%20Security%20Hub%20Operationalization.jpg)
 
 ## License
 
