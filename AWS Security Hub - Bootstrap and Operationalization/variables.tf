@@ -81,6 +81,13 @@ variable "ElasticSearch_Rotation_Period" {
 ###########################################
 # cis_baseline_infrastructure.tf variables
 ###########################################
+variable "AWS_REGION" {
+  description = "This AWS region is used to populated the KMS Key Policy for CloudTrail"
+  default = "us-east-1"
+}
+variable "CT_KMS_Alias" {
+  default = "cis-cloudtrail"
+}
 variable "AccessLog_Bucket_Prefix" {
   default = "cis-accesslogs-bucket"
 }

@@ -1,3 +1,86 @@
+# create KMS key with default cloudtrail policy
+resource "aws_kms_key" "Cloudtrail_KMS_CMK" {
+  description             = "For CloudTrail - Managed by Terraform"
+  deletion_window_in_days = 7
+  is_enabled              = true
+  enable_key_rotation     = true
+  policy                  = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Id": "Key policy created by CloudTrail",
+    "Statement": [
+        {
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {"AWS": [
+                "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+            ]},
+            "Action": "kms:*",
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow CloudTrail to encrypt logs",
+            "Effect": "Allow",
+            "Principal": {"Service": ["cloudtrail.amazonaws.com"]},
+            "Action": "kms:GenerateDataKey*",
+            "Resource": "*",
+            "Condition": {"StringLike": {"kms:EncryptionContext:aws:cloudtrail:arn": "arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"}}
+        },
+        {
+            "Sid": "Allow CloudTrail to describe key",
+            "Effect": "Allow",
+            "Principal": {"Service": ["cloudtrail.amazonaws.com"]},
+            "Action": "kms:DescribeKey",
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow principals in the account to decrypt log files",
+            "Effect": "Allow",
+            "Principal": {"AWS": "*"},
+            "Action": [
+                "kms:Decrypt",
+                "kms:ReEncryptFrom"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {"kms:CallerAccount": "${data.aws_caller_identity.current.account_id}"},
+                "StringLike": {"kms:EncryptionContext:aws:cloudtrail:arn": "arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"}
+            }
+        },
+        {
+            "Sid": "Allow alias creation during setup",
+            "Effect": "Allow",
+            "Principal": {"AWS": "*"},
+            "Action": "kms:CreateAlias",
+            "Resource": "*",
+            "Condition": {"StringEquals": {
+                "kms:ViaService": "ec2.${var.AWS_REGION}.amazonaws.com",
+                "kms:CallerAccount": "${data.aws_caller_identity.current.account_id}"
+            }}
+        },
+        {
+            "Sid": "Enable cross account log decryption",
+            "Effect": "Allow",
+            "Principal": {"AWS": "*"},
+            "Action": [
+                "kms:Decrypt",
+                "kms:ReEncryptFrom"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {"kms:CallerAccount": "${data.aws_caller_identity.current.account_id}"},
+                "StringLike": {"kms:EncryptionContext:aws:cloudtrail:arn": "arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"}
+            }
+        }
+    ]
+}
+POLICY
+}
+# create alias for CT KMS CMK
+resource "aws_kms_alias" "Cloudtrail_KMS_CMK_Alias" {
+  name          = "alias/${var.CT_KMS_Alias}"
+  target_key_id = "${aws_kms_key.Cloudtrail_KMS_CMK.key_id}"
+}
 # Create IAM Password Policy in accordance with CIS 1.5 - 1.11 controls
 resource "aws_iam_account_password_policy" "CIS_Password_Policy" {
   minimum_password_length        = 15
@@ -76,6 +159,7 @@ resource "aws_cloudtrail" "CIS_CloudTrail_Trail" {
   include_global_service_events = true
   is_multi_region_trail         = true
   enable_log_file_validation    = true
+  kms_key_id                    = "${aws_kms_key.Cloudtrail_KMS_CMK.key_id}"
   cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.CIS_CloudWatch_LogsGroup.arn}"
   cloud_watch_logs_role_arn     = "${aws_iam_role.CloudWatch_LogsGroup_IAM_Role.arn}"
   event_selector {
