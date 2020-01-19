@@ -159,7 +159,7 @@ resource "aws_cloudtrail" "CIS_CloudTrail_Trail" {
   include_global_service_events = true
   is_multi_region_trail         = true
   enable_log_file_validation    = true
-  kms_key_id                    = "${aws_kms_key.Cloudtrail_KMS_CMK.key_id}"
+  kms_key_id                    = "${aws_kms_key.Cloudtrail_KMS_CMK.arn}"
   cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.CIS_CloudWatch_LogsGroup.arn}"
   cloud_watch_logs_role_arn     = "${aws_iam_role.CloudWatch_LogsGroup_IAM_Role.arn}"
   event_selector {
