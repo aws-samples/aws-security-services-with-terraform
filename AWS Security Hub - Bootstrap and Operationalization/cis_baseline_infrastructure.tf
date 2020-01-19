@@ -1,0 +1,284 @@
+# Create IAM Password Policy in accordance with CIS 1.5 - 1.11 controls
+resource "aws_iam_account_password_policy" "CIS_Password_Policy" {
+  minimum_password_length        = 15
+  require_lowercase_characters   = true
+  require_numbers                = true
+  require_uppercase_characters   = true
+  require_symbols                = true
+  allow_users_to_change_password = true
+  max_password_age               = 90
+  password_reuse_prevention      = 24
+}
+# Create S3 Bucket for Access logging
+resource "aws_s3_bucket" "Server_Access_Log_S3_Bucket" {
+  bucket_prefix = "${var.AccessLog_Bucket_Prefix}"
+  acl    = "log-delivery-write"
+  versioning {
+      enabled = true
+  }
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm     = "AES256"
+      }
+    }
+  }
+}
+# create cloudwatch log group for cloudtrail to write to, will be used by 3.x cloudwatch metrics & filters
+resource "aws_cloudwatch_log_group" "CIS_CloudWatch_LogsGroup" {
+  name = "${var.CIS_CloudTrail_Trail_Name}-log-group"
+}
+# create IAM role and policy to allow cloudtrail to write logs to cloudwatch
+resource "aws_iam_role" "CloudWatch_LogsGroup_IAM_Role" {
+  name = "${var.CIS_CloudTrail_Trail_Name}-role"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "cloudtrail.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+resource "aws_iam_role_policy" "CIS_CloudWatch_LogsGroup_Policy" {
+  name   = "${var.CIS_CloudTrail_Trail_Name}-policy"
+  role   = "${aws_iam_role.CloudWatch_LogsGroup_IAM_Role.id}"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ],
+      "Effect": "Allow",
+      "Resource": "${aws_cloudwatch_log_group.CIS_CloudWatch_LogsGroup.arn}*"
+    }
+  ]
+}
+EOF
+}
+# create a CloudTrail trail that is compliant with CIS controls (2.1, 2.2, 2.4)
+resource "aws_cloudtrail" "CIS_CloudTrail_Trail" { 
+  name                          = "${var.CIS_CloudTrail_Trail_Name}" 
+  s3_bucket_name                = "${aws_s3_bucket.CIS_CloudTrail_Logs_S3_Bucket.id}"
+  include_global_service_events = true
+  is_multi_region_trail         = true
+  enable_log_file_validation    = true
+  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.CIS_CloudWatch_LogsGroup.arn}"
+  cloud_watch_logs_role_arn     = "${aws_iam_role.CloudWatch_LogsGroup_IAM_Role.arn}"
+  event_selector {
+    read_write_type           = "All"
+    include_management_events = true
+    data_resource {
+      type   = "AWS::Lambda::Function"
+      values = ["arn:aws:lambda"]
+    }
+  }
+  event_selector {
+    read_write_type           = "All"
+    include_management_events = true
+    data_resource {
+      type   = "AWS::S3::Object"
+      values = ["arn:aws:s3:::"]
+    }
+  }
+}
+# create bucket and bucket policy for CloudTrail logs, compliant with CIS controls (2.3, 2.6)
+resource "aws_s3_bucket" "CIS_CloudTrail_Logs_S3_Bucket" {  
+  bucket_prefix = "${var.CloudTrail_Bucket_Prefix}" 
+  acl           = "private"
+  versioning {
+      enabled = true
+  }
+  logging {
+    target_bucket = "${aws_s3_bucket.Server_Access_Log_S3_Bucket.id}"
+    target_prefix = "cloudtrailaccess/"
+  }
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm     = "AES256"
+      }
+    }
+  }
+}
+resource "aws_s3_bucket_policy" "CloudTrail_Bucket_Policy" {
+  bucket = "${aws_s3_bucket.CIS_CloudTrail_Logs_S3_Bucket.id}"
+  policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AWSCloudTrailAclCheck20150319",
+            "Effect": "Allow",
+            "Principal": {"Service": "cloudtrail.amazonaws.com"},
+            "Action": "s3:GetBucketAcl",
+            "Resource": "${aws_s3_bucket.CIS_CloudTrail_Logs_S3_Bucket.arn}"
+        },
+        {
+            "Sid": "AWSCloudTrailWrite20150319",
+            "Effect": "Allow",
+            "Principal": {"Service": "cloudtrail.amazonaws.com"},
+            "Action": "s3:PutObject",
+            "Resource": "${aws_s3_bucket.CIS_CloudTrail_Logs_S3_Bucket.arn}/*",
+            "Condition": {"StringEquals": {"s3:x-amz-acl": "bucket-owner-full-control"}}
+        }
+    ]
+}
+POLICY
+}
+# Creates a reference VPC with private and public subnets
+resource "aws_vpc" "CIS_VPC" {
+  cidr_block           = "${var.CIS_VPC_CIDR}"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  tags {
+      Name = "${var.CIS_VPC_Name_Tag}"
+  }
+}
+# create subnets
+resource "aws_subnet" "CIS_Public_Subnets" {
+  count                   = "${var.Network_Resource_Count}"
+  vpc_id                  = "${aws_vpc.CIS_VPC.id}"
+  cidr_block              = "${cidrsubnet(aws_vpc.CIS_VPC.cidr_block, 8, var.Network_Resource_Count + count.index)}"
+  availability_zone       = "${data.aws_availability_zones.Available_AZ.names[count.index]}"
+  map_public_ip_on_launch = true
+  tags {
+    Name = "${var.CIS_VPC_Name_Tag}-PUB-Subnet-${element(data.aws_availability_zones.Available_AZ.names, count.index)}"
+  }
+}
+resource "aws_subnet" "CIS_Private_Subnets" {
+  count             = "${var.Network_Resource_Count}"
+  vpc_id            = "${aws_vpc.CIS_VPC.id}"
+  cidr_block        = "${cidrsubnet(aws_vpc.CIS_VPC.cidr_block, 8, count.index)}"
+  availability_zone = "${data.aws_availability_zones.Available_AZ.names[count.index]}"
+  tags {
+    Name = "${var.CIS_VPC_Name_Tag}-PRIV-Subnet-${element(data.aws_availability_zones.Available_AZ.names, count.index)}"
+  }
+}
+# attach IGW
+resource "aws_internet_gateway" "CIS_IGW" {
+  vpc_id = "${aws_vpc.CIS_VPC.id}"
+  tags {
+      Name = "${var.CIS_VPC_Name_Tag}-IGW"
+  }
+}
+# create route tables, route table associations and nat gateway
+resource "aws_route_table" "CIS_Public_RTB" {
+  count  = "${var.Network_Resource_Count}"
+  vpc_id = "${aws_vpc.CIS_VPC.id}"
+  route {
+      cidr_block = "0.0.0.0/0"
+      gateway_id = "${aws_internet_gateway.CIS_IGW.id}"
+  }
+  tags {
+    Name = "PUB-RTB-${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
+  }
+}
+resource "aws_eip" "NATGW_Elastic_IPs" {
+  count      = "${var.Network_Resource_Count}"
+  vpc        = true
+  depends_on = ["aws_internet_gateway.CIS_IGW"]
+  tags {
+    Name = "NAT-Gateway-EIP-${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
+  }
+}
+resource "aws_nat_gateway" "CIS_NAT_Gateway" {
+  count         = "${var.Network_Resource_Count}"
+  subnet_id     = "${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
+  allocation_id = "${element(aws_eip.NATGW_Elastic_IPs.*.id, count.index)}"
+  tags {
+    Name = "NAT-Gateway-${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
+  }
+}
+resource "aws_route_table" "CIS_Private_RTB" {
+  count  = "${var.Network_Resource_Count}"
+  vpc_id = "${aws_vpc.CIS_VPC.id}"
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = "${element(aws_nat_gateway.CIS_NAT_Gateway.*.id, count.index)}"
+  }
+  tags {
+    Name = "PRIV-RTB-${element(aws_subnet.CIS_Private_Subnets.*.id, count.index)}"
+  }
+}
+resource "aws_route_table_association" "Public_Subnet_Association" {
+  count          = "${var.Network_Resource_Count}"
+  subnet_id      = "${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
+  route_table_id = "${element(aws_route_table.CIS_Public_RTB.*.id, count.index)}"
+}
+resource "aws_route_table_association" "Private_Subnet_Association" {
+  count          = "${var.Network_Resource_Count}"
+  subnet_id      = "${element(aws_subnet.CIS_Private_Subnets.*.id, count.index)}"
+  route_table_id = "${element(aws_route_table.CIS_Private_RTB.*.id, count.index)}"
+}
+# enable flow logging for the vpc
+resource "aws_flow_log" "CIS_VPC_Flow_Log" {
+  iam_role_arn    = "${aws_iam_role.CIS_FlowLogs_to_CWL_Role.arn}"
+  log_destination = "${aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group.arn}"
+  traffic_type    = "REJECT"
+  vpc_id          = "${aws_vpc.CIS_VPC.id}"
+}
+resource "aws_cloudwatch_log_group" "CIS_FlowLogs_CWL_Group" {
+  name = "${var.CIS_VPC_Name_Tag}-flowlog-group"
+}
+# create role & policy to allow VPC to send flow logs to cloudwatch
+resource "aws_iam_role" "CIS_FlowLogs_to_CWL_Role" {
+  name = "${var.CIS_VPC_Name_Tag}-flowlog-role"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "vpc-flow-logs.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+resource "aws_iam_role_policy" "CIS_FlowLogs_to_CWL_Role_Policy" {
+  name = "${var.CIS_VPC_Name_Tag}-flowlog-policy"
+  role = "${aws_iam_role.CIS_FlowLogs_to_CWL_Role.id}"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ],
+      "Effect": "Allow",
+      "Resource": "${aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group.arn}*"
+    }
+  ]
+}
+EOF
+}
+# remove rules from default SG
+resource "aws_default_security_group" "Default_Security_Group" {
+  vpc_id = "${aws_vpc.CIS_VPC.id}"
+  tags {
+    Name = "DEFAULT_DO_NOT_USE"
+  }
+}
