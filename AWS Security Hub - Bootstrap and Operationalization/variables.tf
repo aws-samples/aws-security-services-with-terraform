@@ -55,7 +55,7 @@ variable "ES_Cognito_User_Pool_Domain_Name" {
   default = ""
 }
 variable "ES_Cognito_Identity_Pool_Name" {
-  default = "elastic-kibanaidp"
+  default = "elastickibanaidp"
 }
 variable "ElasticSearch_Domain_Name" {
   default = "securityhub-siem"
