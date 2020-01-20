@@ -1,5 +1,5 @@
 ## AWS Security Hub - Bootstrap and Operationalization: Prowler Integration
-This module is a Terraform re-write of the AWS Security Blog post on ![integrating Prowler with Security Hub](https://aws.amazon.com/blogs/security/use-aws-fargate-prowler-send-security-configuration-findings-about-aws-services-security-hub/). The current solution is hosted on this aws-samples ![Github](https://github.com/aws-samples/aws-security-hub-prowler-integrations) repo.
+This module is a Terraform re-write of the AWS Security Blog post on [integrating Prowler with Security Hub](https://aws.amazon.com/blogs/security/use-aws-fargate-prowler-send-security-configuration-findings-about-aws-services-security-hub/). The current solution is hosted on this aws-samples [Github](https://github.com/aws-samples/aws-security-hub-prowler-integrations) repo.
 
 ![Architecture](https://github.com/aws-samples/aws-security-hub-prowler-integrations/blob/master/Architecture.jpg)
 The integration works as follows:
