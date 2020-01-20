@@ -162,6 +162,7 @@ resource "aws_cloudtrail" "CIS_CloudTrail_Trail" {
   kms_key_id                    = "${aws_kms_key.Cloudtrail_KMS_CMK.arn}"
   cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.CIS_CloudWatch_LogsGroup.arn}"
   cloud_watch_logs_role_arn     = "${aws_iam_role.CloudWatch_LogsGroup_IAM_Role.arn}"
+  depends_on                    = ["aws_s3_bucket_policy.CloudTrail_Bucket_Policy"]
   event_selector {
     read_write_type           = "All"
     include_management_events = true
