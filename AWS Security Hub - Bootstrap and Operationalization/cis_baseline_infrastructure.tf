@@ -127,6 +127,10 @@ resource "aws_s3_bucket" "Server_Access_Log_S3_Bucket" {
 resource "aws_cloudwatch_log_group" "CIS_CloudWatch_LogsGroup" {
   name = "${var.CIS_CloudTrail_Trail_Name}-log-group"
 }
+# create a cloudwatch log group for vpc flow logs
+resource "aws_cloudwatch_log_group" "VPC_Flowlog_CloudWatch_LogsGroup" {
+  name = "VPC/${var.CIS_VPC_Name_Tag}-flowlogs"
+}
 # create IAM role and policy to allow cloudtrail to write logs to cloudwatch
 resource "aws_iam_role" "CloudWatch_LogsGroup_IAM_Role" {
   name = "${var.CIS_CloudTrail_Trail_Name}-role"
@@ -328,7 +332,7 @@ resource "aws_route_table_association" "Private_Subnet_Association" {
 # enable flow logging for the vpc
 resource "aws_flow_log" "CIS_VPC_Flow_Log" {
   iam_role_arn    = "${aws_iam_role.CIS_FlowLogs_to_CWL_Role.arn}"
-  log_destination = "${aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group.arn}"
+  log_destination = "${aws_cloudwatch_log_group.VPC_Flowlog_CloudWatch_LogsGroup.arn}"
   traffic_type    = "REJECT"
   vpc_id          = "${aws_vpc.CIS_VPC.id}"
 }
@@ -370,7 +374,7 @@ resource "aws_iam_role_policy" "CIS_FlowLogs_to_CWL_Role_Policy" {
         "logs:DescribeLogStreams"
       ],
       "Effect": "Allow",
-      "Resource": "${aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group.arn}*"
+      "Resource": "${aws_cloudwatch_log_group.VPC_Flowlog_CloudWatch_LogsGroup.arn}*"
     }
   ]
 }
