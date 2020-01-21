@@ -15,12 +15,6 @@
  # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ######################
-# GLOBAL variables
-######################
-variable "AWS_REGION" {
-  default = "us-east-1"
-}
-######################
 # config.tf variables
 ######################
 variable "Config_Bucket_Prefix" {
@@ -109,6 +103,10 @@ variable "ElasticSearch_Rotation_Period" {
 ###########################################
 # cis_baseline_infrastructure.tf variables
 ###########################################
+variable "AWS_REGION" {
+  description = "This AWS region is used to populated the KMS Key Policy for CloudTrail"
+  default = "us-east-1"
+}
 variable "CT_KMS_Alias" {
   default = "cis-cloudtrail"
 }

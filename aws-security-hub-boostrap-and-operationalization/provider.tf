@@ -15,5 +15,5 @@
  # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 provider "aws" {
-  region     = ""
+  region     = "${var.AWS_REGION}"
 }

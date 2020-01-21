@@ -1,6 +1,8 @@
 ## AWS Security Hub - Bootstrap and Operationalization
 ![Architecture](https://github.com/aws-samples/aws-security-services-with-terraform/blob/master/AWS%20Security%20Hub%20-%20Bootstrap%20and%20Operationalization/Terraform%20Security%20Hub%20Operationalization.jpg)
 
+* ***NOTE*** These config files have been tested with Terraform v.0.11.14 and the AWS Provider v2.45
+
 The Terraform configuration files within this folder are designed to help customers bootstrap and operationalize Security Hub by enabling downstream services (Config, GuardDuty, Inspector), creating resources that are compliant with AWS CIS Foundations Benchmark controls and extending Security Hub via CloudWatch and Kinesis by consuming all findings into Elasticsearch Service and using Kibana as a Security Information & Event Management (SIEM) tool. All Terraform config files are created seperately to offer modularity (though all variables are within `variables.tf`) if you already have certain resources deployed, or you wanted to craft your own Terraform config files. You can reuse your same `provider.tf` file from the WAF Blog for this solution as well to retain your state in your remote backend.
 
 ## Required IAM Permissions
