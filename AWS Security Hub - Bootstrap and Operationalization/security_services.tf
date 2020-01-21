@@ -20,7 +20,19 @@ resource "aws_guardduty_detector" "GuardDuty_Detector" {
   finding_publishing_frequency = "${var.GuardDuty_Finding_Publishing_Frequency}"
 }
 # Enable Security Hub
-resource "aws_securityhub_account" "Security_Hub_Enabled" {}
+resource "aws_securityhub_account" "Security_Hub_Enabled" {
+  depends_on = ["aws_config_configuration_recorder_status.Config_Recorder_Enabled"]
+}
+# Enable CIS standard
+resource "aws_securityhub_standards_subscription" "Security_Hub_CIS_Standard_Subscription" {
+  depends_on    = ["aws_securityhub_account.Security_Hub_Enabled"]
+  standards_arn = "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+}
+# create IAM access analyzer
+resource "aws_accessanalyzer_analyzer" "IAA" {
+  analyzer_name = "terraformanalyzer"
+  depends_on    = ["aws_securityhub_account.Security_Hub_Enabled"]
+}
 # Create Inspector assessment that targets all Instances 
 resource "aws_inspector_assessment_target" "Inspector_Assessment_Target_All" {
   name = "target-all-instances"
