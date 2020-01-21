@@ -24,8 +24,8 @@ resource "aws_elasticsearch_domain" "Security_Hub_Elasticsearch_Service" {
     zone_awareness_enabled   = true
     instance_type            = "${var.ElasticSearch_Domain_Instance_Type}"
     instance_count           = "${var.ElasticSearch_Domain_Instance_Count}"    
-    dedicated_master_type    = "${var.ElasticSearch_Domain_Instance_Type}"
-    dedicated_master_count   = "${var.ElasticSearch_Domain_Instance_Count}"
+    dedicated_master_type    = "${var.ElasticSearch_Master_Instance_Type}"
+    dedicated_master_count   = "${var.ElasticSearch_Master_Instance_Count}"
   }
   ebs_options {
       ebs_enabled  = true
