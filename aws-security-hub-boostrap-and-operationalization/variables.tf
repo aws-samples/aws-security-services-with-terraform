@@ -119,9 +119,6 @@ variable "ElasticSearch_Rotation_Period" {
 ###########################################
 # cis_baseline_infrastructure.tf variables
 ###########################################
-variable "CT_KMS_Alias" {
-  default = "cis-cloudtrail"
-}
 variable "AccessLog_Bucket_Prefix" {
   default = "cis-accesslogs-bucket"
 }
