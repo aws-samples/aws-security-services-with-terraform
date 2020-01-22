@@ -92,11 +92,6 @@ resource "aws_kms_key" "Cloudtrail_KMS_CMK" {
 }
 POLICY
 }
-# create alias for CT KMS CMK
-resource "aws_kms_alias" "Cloudtrail_KMS_CMK_Alias" {
-  name          = "alias/${var.CT_KMS_Alias}"
-  target_key_id = "${aws_kms_key.Cloudtrail_KMS_CMK.key_id}"
-}
 # Create IAM Password Policy in accordance with CIS 1.5 - 1.11 controls
 resource "aws_iam_account_password_policy" "CIS_Password_Policy" {
   minimum_password_length        = 15
