@@ -328,7 +328,7 @@ resource "aws_route_table_association" "Private_Subnet_Association" {
 # enable flow logging for the vpc
 resource "aws_flow_log" "CIS_VPC_Flow_Log" {
   iam_role_arn    = "${aws_iam_role.CIS_FlowLogs_to_CWL_Role.arn}"
-  log_destination = "${aws_cloudwatch_log_group.VPC_Flowlog_CloudWatch_LogsGroup.arn}"
+  log_destination = "${aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group.arn}"
   traffic_type    = "REJECT"
   vpc_id          = "${aws_vpc.CIS_VPC.id}"
 }
@@ -370,7 +370,7 @@ resource "aws_iam_role_policy" "CIS_FlowLogs_to_CWL_Role_Policy" {
         "logs:DescribeLogStreams"
       ],
       "Effect": "Allow",
-      "Resource": "${aws_cloudwatch_log_group.VPC_Flowlog_CloudWatch_LogsGroup.arn}*"
+      "Resource": "${aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group.arn}*"
     }
   ]
 }
