@@ -55,6 +55,8 @@ This config file will create an ElasticSearch Service domain, Cognito resources 
 #### Elasticsearch Service timeout
 Depending on the amount of nodes, Masters and the instance type Terraform may time out due to how long the Domain takes to deploy. Wait for it to be `Active` in the AWS Management Console and then re-apply state after it has completed to avoid race conditions or orphaned resources.
 
+**NOTE** The default settings of 2 instances, 3 masters and c4.large instances should take around 15 minutes to create and around 7 minutes to destroy
+
 #### Terraform v.0.12.x Support
 These Config files are written to v0.11.14, as was supported by the original WAF Terraform CI/CD blog, these will not work for v0.12.x without modifications
 
