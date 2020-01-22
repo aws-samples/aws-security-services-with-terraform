@@ -57,6 +57,16 @@ variable "Inspector_Assessment_Rules_Packages_USWest1" {
    "arn:aws:inspector:us-west-1:166987590008:rulespackage/0-yeYxlt0x", // RBA (Runtime Behavior Analytics)
   ]
 }
+variable "Inspector_Assessment_Rules_Packages_EUWest2" {
+  type        = "list"
+  description = "All Inspector Assessment Rules for Target All Group"
+  default = [
+   "arn:aws:inspector:eu-west-2:146838936955:rulespackage/0-kZGCqcE1", // NIST Common Vulnerability & Exposures (CVEs)
+   "arn:aws:inspector:eu-west-2:146838936955:rulespackage/0-IeCjwf1W", // CIS OS Security Configuration Benchmark
+   "arn:aws:inspector:eu-west-2:146838936955:rulespackage/0-XApUiSaP", // AWS Security Best Practices
+   "arn:aws:inspector:eu-west-2:146838936955:rulespackage/0-AizSYyNq", // Network Reachability
+  ]
+}
 variable "Inspector_Assessment_Rules_Packages_APSoutheast2" {
   type        = "list"
   description = "All Inspector Assessment Rules for Target All Group"
