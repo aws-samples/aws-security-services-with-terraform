@@ -16,8 +16,9 @@
 
 # Enable GuardDuty
 resource "aws_guardduty_detector" "GuardDuty_Detector" {
-  enable = true
+  enable                       = true
   finding_publishing_frequency = "${var.GuardDuty_Finding_Publishing_Frequency}"
+  depends_on                   = ["aws_securityhub_account.Security_Hub_Enabled"]
 }
 # Enable Security Hub
 resource "aws_securityhub_account" "Security_Hub_Enabled" {

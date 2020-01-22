@@ -177,18 +177,6 @@ resource "aws_cloudtrail" "CIS_CloudTrail_Trail" {
   event_selector {
     read_write_type           = "All"
     include_management_events = true
-    data_resource {
-      type   = "AWS::Lambda::Function"
-      values = ["arn:aws:lambda"]
-    }
-  }
-  event_selector {
-    read_write_type           = "All"
-    include_management_events = true
-    data_resource {
-      type   = "AWS::S3::Object"
-      values = ["arn:aws:s3:::"]
-    }
   }
 }
 # create bucket and bucket policy for CloudTrail logs, compliant with CIS controls (2.3, 2.6)

@@ -97,7 +97,7 @@ resource "aws_cognito_user_pool" "ES_Cognito_User_Pool" {
     required                 = true
     string_attribute_constraints {
       min_length = 7
-      max_length = 32
+      max_length = 64
     }
   }
 }
@@ -332,8 +332,8 @@ resource "aws_cloudwatch_event_target" "CWE_KinesisDataStream_Target" {
 # create kinesis data stream to write security hub findings to firehose delivery stream
 resource "aws_kinesis_stream" "Security_Hub_Kinesis_Stream" {
   name                      = "securityhub-kinesis-stream"
-  shard_count               = 10
-  retention_period          = 48
+  shard_count               = 5
+  retention_period          = 24
   enforce_consumer_deletion = true
   encryption_type           = "KMS"
   kms_key_id                = "alias/aws/kinesis"
@@ -398,7 +398,8 @@ resource "aws_iam_role_policy" "Firehose_Delivery_Policy" {
             "Action": [        
                 "s3:AbortMultipartUpload",        
                 "s3:GetBucketLocation",        
-                "s3:GetObject",        
+                "s3:GetObject",
+                "s3:HeadBucket",        
                 "s3:ListBucket",        
                 "s3:ListBucketMultipartUploads",        
                 "s3:PutObject"
@@ -460,10 +461,12 @@ resource "aws_iam_role_policy" "Firehose_Delivery_Policy" {
        {
           "Effect": "Allow",
           "Action": [
-              "logs:PutLogEvents"
+              "logs:PutLogEvents",
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream"
           ],
           "Resource": [
-              "${aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup.arn}"
+              "${aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup.arn}*"
           ]
        }
     ]
@@ -471,26 +474,27 @@ resource "aws_iam_role_policy" "Firehose_Delivery_Policy" {
 EOF
 }
 # create kiensis data firehose delivery stream that will read from data stream and send findings to elasticsearch
+# will also create an additional cloudwatch log group and log stream for firehose to write error logs to
 resource "aws_kinesis_firehose_delivery_stream" "Security_Hub_SIEM_KDF" {
   name        = "securityhub-siem-deliverystream"
   destination = "elasticsearch"
   kinesis_source_configuration {
       kinesis_stream_arn = "${aws_kinesis_stream.Security_Hub_Kinesis_Stream.arn}"
-      role_arn = "${aws_iam_role.Firehose_Delivery_Role.arn}"
+      role_arn           = "${aws_iam_role.Firehose_Delivery_Role.arn}"
     }
   s3_configuration {
     role_arn           = "${aws_iam_role.Firehose_Delivery_Role.arn}"
     bucket_arn         = "${aws_s3_bucket.Kinesis_Failed_Logs_Bucket.arn}"
-    buffer_size        = 10
-    buffer_interval    = 400
+    buffer_size        = 5
+    buffer_interval    = 60
     compression_format = "GZIP"
   }
   elasticsearch_configuration {
-    domain_arn = "${aws_elasticsearch_domain.Security_Hub_Elasticsearch_Service.arn}"
-    role_arn   = "${aws_iam_role.Firehose_Delivery_Role.arn}"
+    domain_arn            = "${aws_elasticsearch_domain.Security_Hub_Elasticsearch_Service.arn}"
+    role_arn              = "${aws_iam_role.Firehose_Delivery_Role.arn}"
     index_rotation_period = "${var.ElasticSearch_Rotation_Period}"
-    index_name = "securityhub-findings"
-    type_name  = "ASFF" ## if you use 7.x elasticsearch version, do not specify this variable
+    index_name            = "securityhub-findings"
+    type_name             = "ASFF" ## if you use 7.x elasticsearch version, do not specify this variable
     cloudwatch_logging_options {
         enabled         = true
         log_group_name  = "${aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup.name}"
@@ -500,7 +504,7 @@ resource "aws_kinesis_firehose_delivery_stream" "Security_Hub_SIEM_KDF" {
   depends_on = ["aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup"]
 }
 resource "aws_cloudwatch_log_group" "Kinesis_Firehose_Errors_LogsGroup" {
-  name       = "Firehose/errors"
+  name = "Firehose/errors"
 }
 resource "aws_cloudwatch_log_stream" "Kinesis_Firehose_Errors_LogStream" {
   name           = "sechub-log-fails"
