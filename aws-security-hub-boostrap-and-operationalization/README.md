@@ -51,6 +51,16 @@ This config file will create an ElasticSearch Service domain, Cognito resources 
 
 **NOTE** Do *not* re-apply the state from this config file as it will break Cognito auth into Kibana. Upon creation, the Elasticsearch Service app client will override certain settings that will break your authentication if they are modified.
 
+## Troubleshooting
+#### Terraform v.0.12.x Support
+These Config files are written to v0.11.14, as was supported by the original WAF Terraform CI/CD blog, these will not work for v0.12.x without modifications
+
+#### Error creating <resource>: ValidationException: 
+Terraform has been observed throwing validation errors when creating resources, if you are running in CI/CD release the change again to deploy the missing state. If you are running from your local computer call `terraform apply` again.
+
+#### aws_inspector_assessment_template.Inspector_Assessment_Template: NoSuchEntityException
+Ensure you are using the Assessment Template variable that matches the region you are deploying to. Currently, only us-east-1, us-west-1, ap-southeast-2 and eu-west-2 are supported. Other regions will need to be added manually or an Issue / PR should be opened.
+
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.s
