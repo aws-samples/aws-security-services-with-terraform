@@ -127,10 +127,6 @@ resource "aws_s3_bucket" "Server_Access_Log_S3_Bucket" {
 resource "aws_cloudwatch_log_group" "CIS_CloudWatch_LogsGroup" {
   name = "${var.CIS_CloudTrail_Trail_Name}-log-group"
 }
-# create a cloudwatch log group for vpc flow logs
-resource "aws_cloudwatch_log_group" "VPC_Flowlog_CloudWatch_LogsGroup" {
-  name = "VPC/${var.CIS_VPC_Name_Tag}-flowlogs"
-}
 # create IAM role and policy to allow cloudtrail to write logs to cloudwatch
 resource "aws_iam_role" "CloudWatch_LogsGroup_IAM_Role" {
   name = "${var.CIS_CloudTrail_Trail_Name}-role"

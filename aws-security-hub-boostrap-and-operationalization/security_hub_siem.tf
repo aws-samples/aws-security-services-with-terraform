@@ -463,7 +463,7 @@ resource "aws_iam_role_policy" "Firehose_Delivery_Policy" {
               "logs:PutLogEvents"
           ],
           "Resource": [
-              "*"
+              "${aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup.arn}"
           ]
        }
     ]
@@ -491,5 +491,19 @@ resource "aws_kinesis_firehose_delivery_stream" "Security_Hub_SIEM_KDF" {
     index_rotation_period = "${var.ElasticSearch_Rotation_Period}"
     index_name = "securityhub-findings"
     type_name  = "ASFF" ## if you use 7.x elasticsearch version, do not specify this variable
+    cloudwatch_logging_options {
+        enabled         = true
+        log_group_name  = "${aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup.name}"
+        log_stream_name = "sechub-log-fails"
+    }
   }
+}
+resource "aws_cloudwatch_log_group" "Kinesis_Firehose_Errors_LogsGroup" {
+  name       = "Firehose/errors"
+  depends_on = ["aws_kinesis_firehose_delivery_stream.Security_Hub_SIEM_KDF"]
+}
+resource "aws_cloudwatch_log_stream" "Kinesis_Firehose_Errors_LogStream" {
+  name           = "sechub-log-fails"
+  log_group_name = "${aws_cloudwatch_log_group.yada.name}"
+  depends_on     = ["aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup","aws_kinesis_firehose_delivery_stream.Security_Hub_SIEM_KDF"]
 }
