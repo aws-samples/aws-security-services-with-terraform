@@ -1,5 +1,5 @@
 ## AWS Security Hub - Bootstrap and Operationalization
-![Architecture](https://github.com/aws-samples/aws-security-services-with-terraform/blob/master/aws-security-hub-boostrap-and-operationalization/Terraform%20Security%20Hub%20Operationalization.jpg)
+![Architecture](https://github.com/aws-samples/aws-security-services-with-terraform/blob/master/aws-security-hub-boostrap-and-operationalization/Architecture.jpg)
 
 * ***NOTE*** These config files have been tested with Terraform v.0.11.14 and the AWS Provider v2.45
 
