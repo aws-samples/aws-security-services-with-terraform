@@ -504,6 +504,6 @@ resource "aws_cloudwatch_log_group" "Kinesis_Firehose_Errors_LogsGroup" {
 }
 resource "aws_cloudwatch_log_stream" "Kinesis_Firehose_Errors_LogStream" {
   name           = "sechub-log-fails"
-  log_group_name = "${aws_cloudwatch_log_group.yada.name}"
+  log_group_name = "${aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup.name}"
   depends_on     = ["aws_cloudwatch_log_group.Kinesis_Firehose_Errors_LogsGroup","aws_kinesis_firehose_delivery_stream.Security_Hub_SIEM_KDF"]
 }
