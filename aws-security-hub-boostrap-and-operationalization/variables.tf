@@ -140,10 +140,19 @@ variable "CIS_VPC_Name_Tag" {
 }
 #######################
 # cis_3-x.tf variables
-######################3
+#######################
 variable "CIS_SNS_Prefix" {
   default = "cis-3x-alarms"
 }
 variable "CIS_Metric_Alarm_Namespace" {
   default = "LogMetrics"
+}
+############################################
+# elasticsearch_siem_extension.tf variables 
+############################################
+variable "CloudTrail_To_Elastic_Name_Schema" {
+  default = "cloudtrail-to-elastic"
+}
+variable "VPCFlowLogs_To_Elastic_Name_Schema" {
+  default = "vpc-flowlogs-to-elastic"
 }
