@@ -107,6 +107,9 @@ resource "aws_cognito_user_pool_domain" "ES_Cognito_User_Pool_Domain" {
 resource "aws_cognito_identity_pool" "ES_Cognito_Identity_Pool" {
   identity_pool_name               = "${var.ES_Cognito_Identity_Pool_Name}"
   allow_unauthenticated_identities = true # MUST BE TRUE FOR KIBANA TO USE THIS
+  lifecycle {
+    ignore_changes                 = ["*"]
+  }
 }
 # create unauth & auth IAM roles for Cognito
 resource "aws_iam_role" "ES_Identity_Pool_Authenticated_Role" {

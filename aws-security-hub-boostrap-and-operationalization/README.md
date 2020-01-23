@@ -50,7 +50,8 @@ This config file will create a SNS topic and all needed metric filters and alarm
 ### security_hub_siem.tf
 This config file will create an ElasticSearch Service domain, Cognito resources (for use for signing into Kibana) and a delivery pipeline that includes a CloudWatch Event Rule, Kinesis Data Stream and Kinesis Data Firehose Delivery Stream to send all findings from Security Hub to Elastic for exploration and analysis in Kibana. All necessary IAM roles and event patterns are created in this configuration file, you will need to modify the Firehose resource if you would rather send logs to S3 or to Splunk.
 
-**NOTE** Do *not* re-apply the state from this config file as it will break Cognito auth into Kibana. Upon creation, the Elasticsearch Service app client will override certain settings that will break your authentication if they are modified.
+### elasticsearch_siem_extension.tf
+This config file creates infrastructure that will send VPC Flow Logs and CloudTrail logs from CloudWatch to the Elasticsearch Service domain created by `security_hub_siem.tf`. This pipeline uses CloudWatch Log subscriptions, Lambda functions, Kinesis Data Firehose Delivery Streams and IAM roles / policies to accomplish the task.
 
 ## Troubleshooting
 #### Elasticsearch Service timeout
