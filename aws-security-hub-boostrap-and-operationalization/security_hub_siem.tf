@@ -26,7 +26,7 @@ resource "aws_elasticsearch_domain" "Security_Hub_Elasticsearch_Service" {
   ebs_options {
       ebs_enabled  = true
       volume_type  = "gp2"
-      volume_size  = "25"
+      volume_size  = "15"
   }
   encrypt_at_rest {
       enabled = true
