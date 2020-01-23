@@ -20,8 +20,8 @@ resource "aws_elasticsearch_domain" "Security_Hub_Elasticsearch_Service" {
   domain_name           = "${var.ElasticSearch_Domain_Name}"
   elasticsearch_version = "${var.ElasticSearch_Domain_ES_Version}"
   cluster_config {
-    instance_type            = "${var.ElasticSearch_Domain_Instance_Type}"
-    instance_count           = "${var.ElasticSearch_Domain_Instance_Count}"    
+    instance_type       = "${var.ElasticSearch_Domain_Instance_Type}"
+    instance_count      = "${var.ElasticSearch_Domain_Instance_Count}"    
   }
   ebs_options {
       ebs_enabled  = true

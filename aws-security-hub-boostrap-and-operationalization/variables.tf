@@ -99,7 +99,7 @@ variable "ElasticSearch_Domain_Instance_Type" {
   default = "c4.large.elasticsearch"
 }
 variable "ElasticSearch_Domain_Instance_Count" {
-  default = "3"
+  default = "2"
 }
 variable "Elasticsearch_Trusted_IP" {
   default = ""
