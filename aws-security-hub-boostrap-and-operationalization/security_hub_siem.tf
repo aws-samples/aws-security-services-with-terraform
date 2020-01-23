@@ -47,6 +47,7 @@ resource "aws_elasticsearch_domain" "Security_Hub_Elasticsearch_Service" {
       identity_pool_id = "${aws_cognito_identity_pool.ES_Cognito_Identity_Pool.id}"
       role_arn         = "${aws_iam_role.ES_Cognito_Role.arn}"
   }
+  depends_on           = ["aws_securityhub_account.Security_Hub_Enabled"]
 }
 # this elasticsearch access policy will only allow your account and the IP your specify to access it
 resource "aws_elasticsearch_domain_policy" "Security_Hub_Elasticsearch_Service_Policy" {

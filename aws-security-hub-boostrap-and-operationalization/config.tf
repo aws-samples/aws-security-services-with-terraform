@@ -34,7 +34,6 @@ resource "aws_iam_role" "Config_IAM_Role" {
 }
 POLICY
 }
-
 resource "aws_iam_role_policy_attachment" "Config_Role_Attach_Policy" {
   role       = "${aws_iam_role.Config_IAM_Role.name}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSConfigRole"
