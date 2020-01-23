@@ -20,17 +20,13 @@ resource "aws_elasticsearch_domain" "Security_Hub_Elasticsearch_Service" {
   domain_name           = "${var.ElasticSearch_Domain_Name}"
   elasticsearch_version = "${var.ElasticSearch_Domain_ES_Version}"
   cluster_config {
-    dedicated_master_enabled = true
-    zone_awareness_enabled   = true
-    instance_type            = "${var.ElasticSearch_Domain_Instance_Type}"
-    instance_count           = "${var.ElasticSearch_Domain_Instance_Count}"    
-    dedicated_master_type    = "${var.ElasticSearch_Master_Instance_Type}"
-    dedicated_master_count   = "${var.ElasticSearch_Master_Instance_Count}"
+    instance_type       = "${var.ElasticSearch_Domain_Instance_Type}"
+    instance_count      = "${var.ElasticSearch_Domain_Instance_Count}"    
   }
   ebs_options {
       ebs_enabled  = true
       volume_type  = "gp2"
-      volume_size  = "25"
+      volume_size  = "15"
   }
   encrypt_at_rest {
       enabled = true
@@ -47,6 +43,7 @@ resource "aws_elasticsearch_domain" "Security_Hub_Elasticsearch_Service" {
       identity_pool_id = "${aws_cognito_identity_pool.ES_Cognito_Identity_Pool.id}"
       role_arn         = "${aws_iam_role.ES_Cognito_Role.arn}"
   }
+  depends_on           = ["aws_securityhub_account.Security_Hub_Enabled"]
 }
 # this elasticsearch access policy will only allow your account and the IP your specify to access it
 resource "aws_elasticsearch_domain_policy" "Security_Hub_Elasticsearch_Service_Policy" {
@@ -58,13 +55,13 @@ resource "aws_elasticsearch_domain_policy" "Security_Hub_Elasticsearch_Service_P
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "${data.aws_caller_identity.current.account_id}"
+        "AWS": "*"
       },
       "Action": "es:*",
       "Resource": "${aws_elasticsearch_domain.Security_Hub_Elasticsearch_Service.arn}/*",
       "Condition": {
         "IpAddress": {
-          "aws:SourceIp": "${var.Elasticsearch_Trusted_IP}"
+          "aws:SourceIp": "${var.TRUSTED_IP}"
         }
       }
     }
@@ -110,6 +107,9 @@ resource "aws_cognito_user_pool_domain" "ES_Cognito_User_Pool_Domain" {
 resource "aws_cognito_identity_pool" "ES_Cognito_Identity_Pool" {
   identity_pool_name               = "${var.ES_Cognito_Identity_Pool_Name}"
   allow_unauthenticated_identities = true # MUST BE TRUE FOR KIBANA TO USE THIS
+  lifecycle {
+    ignore_changes                 = ["*"]
+  }
 }
 # create unauth & auth IAM roles for Cognito
 resource "aws_iam_role" "ES_Identity_Pool_Authenticated_Role" {

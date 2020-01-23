@@ -312,7 +312,7 @@ resource "aws_route_table_association" "Private_Subnet_Association" {
 resource "aws_flow_log" "CIS_VPC_Flow_Log" {
   iam_role_arn    = "${aws_iam_role.CIS_FlowLogs_to_CWL_Role.arn}"
   log_destination = "${aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group.arn}"
-  traffic_type    = "REJECT"
+  traffic_type    = "ALL"
   vpc_id          = "${aws_vpc.CIS_VPC.id}"
 }
 resource "aws_cloudwatch_log_group" "CIS_FlowLogs_CWL_Group" {
@@ -364,5 +364,31 @@ resource "aws_default_security_group" "Default_Security_Group" {
   vpc_id = "${aws_vpc.CIS_VPC.id}"
   tags {
     Name = "DEFAULT_DO_NOT_USE"
+  }
+}
+resource "aws_security_group" "CIS_Linux_SG" {
+  name        = "cis-linux-sg"
+  description = "Allows 443 in and 22 from trusted IP ranges - Managed by Terraform"
+  vpc_id      = "${aws_vpc.CIS_VPC.id}"
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${var.TRUSTED_IP}"]
+  }
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+  tags {
+      Name = "${var.CIS_VPC_Name_Tag}-Linux-SG"
   }
 }
