@@ -59,7 +59,7 @@ resource "aws_elasticsearch_domain_policy" "Security_Hub_Elasticsearch_Service_P
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "${data.aws_caller_identity.current.account_id}"
+        "AWS": "*"
       },
       "Action": "es:*",
       "Resource": "${aws_elasticsearch_domain.Security_Hub_Elasticsearch_Service.arn}/*",
