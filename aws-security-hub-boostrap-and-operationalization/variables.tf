@@ -98,14 +98,8 @@ variable "ElasticSearch_Domain_ES_Version" {
 variable "ElasticSearch_Domain_Instance_Type" {
   default = "c4.large.elasticsearch"
 }
-variable "ElasticSearch_Master_Instance_Type" {
-  default = "c4.large.elasticsearch"
-}
 variable "ElasticSearch_Domain_Instance_Count" {
-  default = "1"
-}
-variable "ElasticSearch_Master_Instance_Count" {
-  default = "1"
+  default = "3"
 }
 variable "Elasticsearch_Trusted_IP" {
   default = ""
