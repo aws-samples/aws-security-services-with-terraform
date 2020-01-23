@@ -139,7 +139,6 @@ resource "aws_cloudwatch_log_subscription_filter" "Cloudtrail_Logs_Lambda_Subscr
   log_group_name  = "${aws_cloudwatch_log_group.CIS_CloudWatch_LogsGroup.name}"
   filter_pattern  = "" # leave blank for CT
   destination_arn = "${aws_lambda_function.Cloudtrail_Lambda_To_Firehose_Function.arn}"
-  depends_on      = ["aws_cloudwatch_log_group.CIS_CloudWatch_LogsGroup","aws_lambda_function.Cloudtrail_Lambda_To_Firehose_Function"]
 }
 # create lambda function & execution role to send cloudtrail logs to kinesis data firehose
 resource "aws_iam_role" "Cloudtrail_Lambda_To_Firehose_Role" {
@@ -355,7 +354,6 @@ resource "aws_cloudwatch_log_subscription_filter" "VPCFlowLogs_Logs_Lambda_Subsc
   log_group_name  = "${aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group.name}"
   filter_pattern  = "[version, account_id, interface_id, srcaddr != \"-\", dstaddr != \"-\", srcport != \"-\", dstport != \"-\", protocol, packets, bytes, start, end, action, log_status]" # leave blank for CT
   destination_arn = "${aws_lambda_function.VPCFlowLogs_Lambda_To_Firehose_Function.arn}"
-  depends_on      = ["aws_cloudwatch_log_group.CIS_FlowLogs_CWL_Group","aws_lambda_function.VPCFlowLogs_Lambda_To_Firehose_Function"]
 }
 # create lambda function & execution role to send cloudtrail logs to kinesis data firehose
 resource "aws_iam_role" "VPCFlowLogs_Lambda_To_Firehose_Role" {

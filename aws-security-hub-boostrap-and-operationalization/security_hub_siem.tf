@@ -61,7 +61,7 @@ resource "aws_elasticsearch_domain_policy" "Security_Hub_Elasticsearch_Service_P
       "Resource": "${aws_elasticsearch_domain.Security_Hub_Elasticsearch_Service.arn}/*",
       "Condition": {
         "IpAddress": {
-          "aws:SourceIp": "${var.Elasticsearch_Trusted_IP}"
+          "aws:SourceIp": "${var.TRUSTED_IP}"
         }
       }
     }

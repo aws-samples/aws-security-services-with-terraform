@@ -20,6 +20,10 @@
 variable "AWS_REGION" {
   default = "us-east-1"
 }
+variable "TRUSTED_IP" {
+  description = "Used to populate Elasticsearch SourceIP condition and VPC SSH security group"
+  default     = "/32"
+}
 ######################
 # config.tf variables
 ######################
@@ -99,10 +103,7 @@ variable "ElasticSearch_Domain_Instance_Type" {
   default = "c4.large.elasticsearch"
 }
 variable "ElasticSearch_Domain_Instance_Count" {
-  default = "2"
-}
-variable "Elasticsearch_Trusted_IP" {
-  default = ""
+  default = "1"
 }
 variable "KDF_Bucket_Prefix" {
   default = "elastic-kdf-logs-bucket"

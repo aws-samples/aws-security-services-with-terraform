@@ -366,3 +366,29 @@ resource "aws_default_security_group" "Default_Security_Group" {
     Name = "DEFAULT_DO_NOT_USE"
   }
 }
+resource "aws_security_group" "CIS_Linux_SG" {
+  name        = "cis-linux-sg"
+  description = "Allows 443 in and 22 from trusted IP ranges - Managed by Terraform"
+  vpc_id      = "${aws_vpc.CIS_VPC.id}"
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${var.TRUSTED_IP}"]
+  }
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+  tags {
+      Name = "${var.CIS_VPC_Name_Tag}-Linux-SG"
+  }
+}
