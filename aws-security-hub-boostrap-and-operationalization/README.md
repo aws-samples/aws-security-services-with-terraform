@@ -20,6 +20,7 @@ You will need to modify the CodeBuild role created for the WAF Blog to allow it 
 - Kinesis Data Streams
 - Kinesis Data Firehose
 - KMS
+- Lambda
 - S3
 - SNS
 - VPC
@@ -44,7 +45,7 @@ This config file will create a multi-region CloudTrail trail along with a S3 buc
 ### cis_3-x.tf
 This config file will create a SNS topic and all needed metric filters and alarms needed to be in compliance with CIS 3.x controls. This depends on the CloudWatch group that was created in `cis_baseline_infrastructure.tf`, if you decide to not use that file you will need to specify your own CloudWatch Log Group that CloudTrail publishes to.
 
-**NOTE** Due to the way Terraform provisions resources, Email SNS subscriptions are not allowed to be created. You will need to manually subscribe and accept an email subscription to the SNS topic for the Security Hub 3.x controls to be compliant.
+**NOTE** Due to the way Terraform provisions resources, Email SNS subscriptions are not allowed to be created. **You must manually subscribe and accept an email subscription to the SNS topic for the Security Hub 3.x controls to be compliant.**
 
 ### security_hub_siem.tf
 This config file will create an ElasticSearch Service domain, Cognito resources (for use for signing into Kibana) and a delivery pipeline that includes a CloudWatch Event Rule, Kinesis Data Stream and Kinesis Data Firehose Delivery Stream to send all findings from Security Hub to Elastic for exploration and analysis in Kibana. All necessary IAM roles and event patterns are created in this configuration file, you will need to modify the Firehose resource if you would rather send logs to S3 or to Splunk.
