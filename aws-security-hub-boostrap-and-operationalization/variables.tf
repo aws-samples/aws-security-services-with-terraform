@@ -102,10 +102,10 @@ variable "ElasticSearch_Master_Instance_Type" {
   default = "c4.large.elasticsearch"
 }
 variable "ElasticSearch_Domain_Instance_Count" {
-  default = "2"
+  default = "1"
 }
 variable "ElasticSearch_Master_Instance_Count" {
-  default = "3"
+  default = "1"
 }
 variable "Elasticsearch_Trusted_IP" {
   default = ""
@@ -129,7 +129,7 @@ variable "CloudTrail_Bucket_Prefix" {
   default = "cis-cloudtrail-logs-bucket"
 }
 variable "Network_Resource_Count" {
-  default     = 3
+  default     = 1
   description = "Amount of Network Resources Provisioned e.g. Subnets and Route Tables - Adjust for Regional AZ Count"
 }
 variable "CIS_VPC_CIDR" {
