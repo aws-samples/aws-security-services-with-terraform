@@ -35,9 +35,9 @@ This config file will create all resources needed to create and enable an AWS Co
 **NOTE** You may still need to go through the Config console and hit save for Config to be enabled.
 
 ### security_services.tf
-This config file will enable a GuardDuty, Security Hub and create an Inspector template and target group that will target all EC2 instances with all assessment templates. These assessment templates are provided via a Terraform variable list, ensure you specify the correct one. Only us-east-1, us-west-1 and ap-southeast-2 templates are created, you'll need to create your own for other regions, refer to [Amazon Inspector ARNS for Rules Packages](https://docs.aws.amazon.com/inspector/latest/userguide/inspector_rules-arns.html) for more information
+This config file will enable a GuardDuty detector, Security Hub (and the AWS CIS Foundations Benchmark), an IAM Access Analyzer detector and create an Inspector template and target group that will target all EC2 instances with all assessment templates.
 
-**NOTE** Depending on the timing of your resources being created by Terraform, Config and Security Hub (if using both `config.tf` and `security_services.tf`), the Security Hub Service-Linked Rules (SLRs) for Config used for the CIS AWS Foundations Benchmark controls may not created. To remediate this, disable the compliance standard and re-enable it within Security Hub. Don't forget to turn off controls that are not relevant to you.
+**NOTE** Ensure you replace the value for `aws_inspector_assessment_template.Inspector_Assessment_Template.rules_package_arns` with the proper Variable depending on your region, assessment templates are provided via a Terraform variable `list`, ensure you specify the correct one. If there are regions missing refer to [Amazon Inspector ARNS for Rules Packages](https://docs.aws.amazon.com/inspector/latest/userguide/inspector_rules-arns.html) for more information on creating your own.
 
 ### cis_baseline_infrastructure.tf
 This config file will create a multi-region CloudTrail trail along with a S3 bucket, CloudWatch Logs group, IAM Password Policy and Server Access Logging S3 Bucket that are all in compliance with CIS 1.x and 2.x controls. Additionally a VPC with private and public subnets, VPC flow logging and an empty default SG (compliant with CIS 4.3) and all IAM roles and policies needed will be created. This will help you be in compliance with CIS and can serve as a baseline for a new environment being created. The amount of AZs that will be created is dependnet on a variable named `Network_Resource_Count`, ensure you do not specify a value higher than the amount of AZs in your Region (i.e. 6 in us-east-1, 3 in us-east-2, etc.)
@@ -57,7 +57,18 @@ This config file creates infrastructure that will send VPC Flow Logs and CloudTr
 #### Elasticsearch Service timeout
 Depending on the amount of nodes, Masters and the instance type Terraform may time out due to how long the Domain takes to deploy. Wait for it to be `Active` in the AWS Management Console and then re-apply state after it has completed to avoid race conditions or orphaned resources.
 
-**NOTE** The default settings of 2 instances, 3 masters and c4.large instances should take around 15 minutes to create and around 7 minutes to destroy
+#### Master node support for Elasticsearch Service
+Master's were removed (`commit f3f5d259ef53aaee3de0175cb37a2d88d55bfdf2`) from the template due to potential timeouts depending on Region and count of masters. To add them back in, replace the `cluster_config` with the following values. Please note, you will need to also add the reference variables to `variables.tf`:
+```hcl
+cluster_config {
+    dedicated_master_enabled = true
+    zone_awareness_enabled   = true
+    instance_type            = "${var.ElasticSearch_Domain_Instance_Type}"
+    instance_count           = "${var.ElasticSearch_Domain_Instance_Count}"    
+    dedicated_master_type    = "${var.ElasticSearch_Master_Instance_Type}"
+    dedicated_master_count   = "${var.ElasticSearch_Master_Instance_Count}"
+  }
+```
 
 #### Terraform v.0.12.x Support
 These Config files are written to v0.11.14, as was supported by the original WAF Terraform CI/CD blog, these will not work for v0.12.x without modifications
