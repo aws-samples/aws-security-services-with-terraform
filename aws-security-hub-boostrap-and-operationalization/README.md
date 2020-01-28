@@ -1,7 +1,7 @@
 ## AWS Security Hub - Bootstrap and Operationalization
 ![Architecture](https://github.com/aws-samples/aws-security-services-with-terraform/blob/master/aws-security-hub-boostrap-and-operationalization/Architecture.jpg)
 
-* ***NOTE*** These config files have been tested with Terraform v.0.11.14 and the AWS Provider v2.45
+* ***NOTE*** These config files have been tested with Terraform v.0.11.14 and AWS Provider v2.45
 
 The Terraform configuration files within this folder are designed to help customers bootstrap and operationalize Security Hub by enabling downstream services (Config, GuardDuty, Inspector), creating resources that are compliant with AWS CIS Foundations Benchmark controls and extending Security Hub via CloudWatch and Kinesis by consuming all findings into Elasticsearch Service and using Kibana as a Security Information & Event Management (SIEM) tool. All Terraform config files are created seperately to offer modularity (though all variables are within `variables.tf`) if you already have certain resources deployed, or you wanted to craft your own Terraform config files. You can reuse your same `provider.tf` file from the WAF Blog for this solution as well to retain your state in your remote backend.
 
@@ -48,10 +48,12 @@ This config file will create a SNS topic and all needed metric filters and alarm
 **NOTE** Due to the way Terraform provisions resources, Email SNS subscriptions are not allowed to be created. **You must manually subscribe and accept an email subscription to the SNS topic for the Security Hub 3.x controls to be compliant.**
 
 ### security_hub_siem.tf
-This config file will create an ElasticSearch Service domain, Cognito resources (for use for signing into Kibana) and a delivery pipeline that includes a CloudWatch Event Rule, Kinesis Data Stream and Kinesis Data Firehose Delivery Stream to send all findings from Security Hub to Elastic for exploration and analysis in Kibana. All necessary IAM roles and event patterns are created in this configuration file, you will need to modify the Firehose resource if you would rather send logs to S3 or to Splunk.
+This config file will create an ElasticSearch Service domain, Cognito resources (for use for signing into Kibana) and a delivery pipeline that includes a CloudWatch Event Rule, Kinesis Data Stream and Kinesis Data Firehose Delivery Stream to send all findings from Security Hub to Elasticsearch Service for exploration and analysis in Kibana. All necessary IAM roles and event patterns are created in this configuration file, you will need to modify the Firehose resource if you would rather send logs to S3 or to Splunk.
 
 ### elasticsearch_siem_extension.tf
 This config file creates infrastructure that will send VPC Flow Logs and CloudTrail logs from CloudWatch to the Elasticsearch Service domain created by `security_hub_siem.tf`. This pipeline uses CloudWatch Log subscriptions, Lambda functions, Kinesis Data Firehose Delivery Streams and IAM roles / policies to accomplish the task.
+
+**NOTE** The timestamps for both are in Linux Epoch time and not able to be sorted by Kibana unless they were converted to Datetime. The content of the logs are also in one JSON blob, but can be searched for text.
 
 ## Troubleshooting
 #### Elasticsearch Service timeout
@@ -77,9 +79,7 @@ These Config files are written to v0.11.14, as was supported by the original WAF
 Terraform has been observed throwing validation errors when creating a large amount of resources (this solution is over 100 resources), if you are running in CI/CD release the change again to deploy the missing state. If you are running from your local computer call `terraform apply` again.
 
 #### aws_inspector_assessment_template.Inspector_Assessment_Template: NoSuchEntityException
-Ensure you are using the Assessment Template variable that matches the region you are deploying to. Currently, only `us-east-1` (North Virginia), `us-west-1` (North California), `ap-southeast-2` (Sydney, Australia) and `eu-west-2` (London, UK) are supported.
-
-If you add other regional support, please open a PR to have them added to mainline. If you need help creating them please open an Issue.
+Ensure you are using the Assessment Template variable that matches the region you are deploying to.
 
 ## License
 
