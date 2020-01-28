@@ -1,7 +1,7 @@
 ## AWS Security Hub - Bootstrap and Operationalization
 ![Architecture](https://github.com/aws-samples/aws-security-services-with-terraform/blob/master/aws-security-hub-boostrap-and-operationalization/Architecture.jpg)
 
-* ***NOTE*** These config files have been tested with Terraform v.0.11.14 and AWS Provider v2.45
+* ***NOTE*** These config files have been tested with Terraform v.0.11.14 and AWS Provider v2.46
 
 The Terraform configuration files within this folder are designed to help customers bootstrap and operationalize Security Hub by enabling downstream services (Config, GuardDuty, Inspector), creating resources that are compliant with AWS CIS Foundations Benchmark controls and extending Security Hub via CloudWatch and Kinesis by consuming all findings into Elasticsearch Service and using Kibana as a Security Information & Event Management (SIEM) tool. All Terraform config files are created seperately to offer modularity (though all variables are within `variables.tf`) if you already have certain resources deployed, or you wanted to craft your own Terraform config files. You can reuse your same `provider.tf` file from the WAF Blog for this solution as well to retain your state in your remote backend.
 
@@ -73,13 +73,16 @@ cluster_config {
 ```
 
 #### Terraform v.0.12.x Support
-These Config files are written to v0.11.14, as was supported by the original WAF Terraform CI/CD blog, these will not work for v0.12.x without modifications
+These Config files are written to v0.11.14, as was supported by the original WAF Terraform CI/CD blog, these will not work for v0.12.x without modifications.
 
 #### Error creating <resource>: ValidationException: 
 Terraform has been observed throwing validation errors when creating a large amount of resources (this solution is over 100 resources), if you are running in CI/CD release the change again to deploy the missing state. If you are running from your local computer call `terraform apply` again.
 
 #### aws_inspector_assessment_template.Inspector_Assessment_Template: NoSuchEntityException
 Ensure you are using the Assessment Template variable that matches the region you are deploying to.
+
+#### Security Hub has compliance controls with "unknown" results
+Due to the way the graph for this whole solution works, Security Hub & the CIS AWS Foundations Benchmark compliance standard may be enabled before a majority of the resources. Some are periodic (3.x rules, namely) and will become Passed after you have subscribed to the SNS topic. If the problem persists after 24 hours, disable and re-enable the standard.
 
 ## License
 
