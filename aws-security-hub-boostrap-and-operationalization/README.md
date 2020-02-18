@@ -53,7 +53,17 @@ This config file will create an ElasticSearch Service domain, Cognito resources 
 ### elasticsearch_siem_extension.tf
 This config file creates infrastructure that will send VPC Flow Logs and CloudTrail logs from CloudWatch to the Elasticsearch Service domain created by `security_hub_siem.tf`. This pipeline uses CloudWatch Log subscriptions, Lambda functions, Kinesis Data Firehose Delivery Streams and IAM roles / policies to accomplish the task.
 
-**NOTE** The timestamps for both are in Linux Epoch time and not able to be sorted by Kibana unless they were converted to Datetime. The content of the logs are also in one JSON blob, but can be searched for text.
+**NOTE** See the below section for information on using Scripted fields for converting the CloudWatch Log Epochtime to a timestamp.
+
+## Epochtime to Timestamp via Kibana Script fields
+In Kibana, select the indicies for your CloudTrail and VPC Flow logs and select the Script Fields tab and choose **Add scripted field** and configure the following:
+**Language**: painless
+**Type**: date
+**Format**: Date
+**Moment.js format pattern**: MMMM Do YYYY, HH:mm:ss.SSS
+**Script**: `doc['logEvents.timestamp'].value`
+
+Save the field and you should be able to sort by this new field moving forward.
 
 ## Troubleshooting
 #### Elasticsearch Service timeout

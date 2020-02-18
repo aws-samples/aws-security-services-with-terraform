@@ -29,6 +29,11 @@ resource "aws_securityhub_standards_subscription" "Security_Hub_CIS_Standard_Sub
   depends_on    = ["aws_securityhub_account.Security_Hub_Enabled"]
   standards_arn = "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0"
 }
+# Enable PCI-DSS standard
+resource "aws_securityhub_standards_subscription" "Security_Hub_PCIDSS_Standard_Subscription" {
+  depends_on    = ["aws_securityhub_account.Security_Hub_Enabled"]
+  standards_arn = "arn:aws:securityhub:${var.AWS_REGION}::standards/pci-dss/v/3.2.1"
+}
 # create IAM access analyzer
 resource "aws_accessanalyzer_analyzer" "IAA" {
   analyzer_name = "terraformanalyzer"
