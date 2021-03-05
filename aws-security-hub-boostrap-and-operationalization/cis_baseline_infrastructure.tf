@@ -228,7 +228,7 @@ resource "aws_vpc" "CIS_VPC" {
   cidr_block           = "${var.CIS_VPC_CIDR}"
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags {
+  tags = {
       Name = "${var.CIS_VPC_Name_Tag}"
   }
 }
@@ -239,7 +239,7 @@ resource "aws_subnet" "CIS_Public_Subnets" {
   cidr_block              = "${cidrsubnet(aws_vpc.CIS_VPC.cidr_block, 8, var.Network_Resource_Count + count.index)}"
   availability_zone       = "${data.aws_availability_zones.Available_AZ.names[count.index]}"
   map_public_ip_on_launch = true
-  tags {
+  tags = {
     Name = "${var.CIS_VPC_Name_Tag}-PUB-Subnet-${element(data.aws_availability_zones.Available_AZ.names, count.index)}"
   }
 }
@@ -248,14 +248,14 @@ resource "aws_subnet" "CIS_Private_Subnets" {
   vpc_id            = "${aws_vpc.CIS_VPC.id}"
   cidr_block        = "${cidrsubnet(aws_vpc.CIS_VPC.cidr_block, 8, count.index)}"
   availability_zone = "${data.aws_availability_zones.Available_AZ.names[count.index]}"
-  tags {
+  tags = {
     Name = "${var.CIS_VPC_Name_Tag}-PRIV-Subnet-${element(data.aws_availability_zones.Available_AZ.names, count.index)}"
   }
 }
 # attach IGW
 resource "aws_internet_gateway" "CIS_IGW" {
   vpc_id = "${aws_vpc.CIS_VPC.id}"
-  tags {
+  tags = {
       Name = "${var.CIS_VPC_Name_Tag}-IGW"
   }
 }
@@ -267,7 +267,7 @@ resource "aws_route_table" "CIS_Public_RTB" {
       cidr_block = "0.0.0.0/0"
       gateway_id = "${aws_internet_gateway.CIS_IGW.id}"
   }
-  tags {
+  tags = {
     Name = "PUB-RTB-${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
   }
 }
@@ -275,7 +275,7 @@ resource "aws_eip" "NATGW_Elastic_IPs" {
   count      = "${var.Network_Resource_Count}"
   vpc        = true
   depends_on = ["aws_internet_gateway.CIS_IGW"]
-  tags {
+  tags = {
     Name = "NAT-Gateway-EIP-${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
   }
 }
@@ -283,7 +283,7 @@ resource "aws_nat_gateway" "CIS_NAT_Gateway" {
   count         = "${var.Network_Resource_Count}"
   subnet_id     = "${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
   allocation_id = "${element(aws_eip.NATGW_Elastic_IPs.*.id, count.index)}"
-  tags {
+  tags = {
     Name = "NAT-Gateway-${element(aws_subnet.CIS_Public_Subnets.*.id, count.index)}"
   }
 }
@@ -294,7 +294,7 @@ resource "aws_route_table" "CIS_Private_RTB" {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = "${element(aws_nat_gateway.CIS_NAT_Gateway.*.id, count.index)}"
   }
-  tags {
+  tags = {
     Name = "PRIV-RTB-${element(aws_subnet.CIS_Private_Subnets.*.id, count.index)}"
   }
 }
@@ -362,7 +362,7 @@ EOF
 # remove rules from default SG
 resource "aws_default_security_group" "Default_Security_Group" {
   vpc_id = "${aws_vpc.CIS_VPC.id}"
-  tags {
+  tags = {
     Name = "DEFAULT_DO_NOT_USE"
   }
 }
@@ -388,7 +388,7 @@ resource "aws_security_group" "CIS_Linux_SG" {
     protocol        = "-1"
     cidr_blocks     = ["0.0.0.0/0"]
   }
-  tags {
+  tags = {
       Name = "${var.CIS_VPC_Name_Tag}-Linux-SG"
   }
 }
